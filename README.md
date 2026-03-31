@@ -1,4 +1,4 @@
-# HealthPulse 🩺
+# **HealthPulse 🩺**
 
 A full-stack health assistant web application built as part of the Web Development Lab (WDL) mini project.
 
