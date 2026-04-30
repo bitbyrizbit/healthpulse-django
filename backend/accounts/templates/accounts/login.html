@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Login — HealthPulse</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=Fraunces:ital,wght@0,300;0,600;1,300&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg: #f5f2ee;
+      --card: #ffffff;
+      --text: #1a1a1a;
+      --muted: #6b7280;
+      --accent: #1d6b4a;
+      --accent-light: #e8f5ee;
+      --danger: #dc2626;
+      --border: #e5e0d8;
+      --radius: 14px;
+    }
+    body {
+      font-family: 'DM Sans', sans-serif;
+      background: var(--bg);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 3rem 2.5rem;
+      width: 100%;
+      max-width: 420px;
+    }
+    .logo {
+      font-family: 'Fraunces', serif;
+      font-size: 1.6rem;
+      font-weight: 600;
+      color: var(--accent);
+      margin-bottom: 0.25rem;
+    }
+    .subtitle { color: var(--muted); font-size: 0.9rem; margin-bottom: 2rem; }
+    label { display: block; font-size: 0.85rem; font-weight: 500; margin-bottom: 6px; color: var(--text); }
+    input {
+      width: 100%; padding: 0.7rem 1rem;
+      border: 1.5px solid var(--border);
+      border-radius: 8px;
+      font-family: inherit; font-size: 0.95rem;
+      background: var(--bg);
+      transition: border-color .2s;
+      margin-bottom: 1.1rem;
+      outline: none;
+    }
+    input:focus { border-color: var(--accent); background: #fff; }
+    .err { color: var(--danger); font-size: 0.8rem; margin-top: -0.8rem; margin-bottom: 0.8rem; display: none; }
+    .err.show { display: block; }
+    .btn {
+      width: 100%; padding: 0.85rem;
+      background: var(--accent);
+      color: #fff; border: none;
+      border-radius: 8px; font-size: 1rem;
+      font-family: inherit; font-weight: 500;
+      cursor: pointer; transition: opacity .2s;
+    }
+    .btn:hover { opacity: 0.88; }
+    .link { text-align: center; margin-top: 1.2rem; color: var(--muted); font-size: 0.88rem; }
+    .link a { color: var(--accent); text-decoration: none; font-weight: 500; }
+    .django-msg { background: #fef2f2; color: var(--danger); border: 1px solid #fca5a5; border-radius: 8px; padding: .6rem 1rem; margin-bottom: 1rem; font-size: .85rem; }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <div class="logo">HealthPulse</div>
+    <p class="subtitle">Sign in to your account</p>
+
+    {% if messages %}
+      {% for msg in messages %}
+        <div class="django-msg">{{ msg }}</div>
+      {% endfor %}
+    {% endif %}
+
+    <form id="loginForm" method="POST" action="/accounts/login/" novalidate>
+      {% csrf_token %}
+      <label for="username">Username</label>
+      <input type="text" id="username" name="username" placeholder="yourname" autocomplete="username">
+      <div class="err" id="usernameErr">Username is required.</div>
+
+      <label for="password">Password</label>
+      <input type="password" id="password" name="password" placeholder="••••••••" autocomplete="current-password">
+      <div class="err" id="passwordErr">Password must be at least 6 characters.</div>
+
+      <button type="submit" class="btn">Sign In</button>
+    </form>
+
+    <div class="link">Don't have an account? <a href="/accounts/register/">Register</a></div>
+  </div>
+
+  <script>
+    // Exp 3: JS form validation
+    document.getElementById('loginForm').addEventListener('submit', function(e) {
+      let valid = true;
+      const username = document.getElementById('username').value.trim();
+      const password = document.getElementById('password').value;
+
+      const showErr = (id, show) => {
+        document.getElementById(id).classList.toggle('show', show);
+      };
+
+      if (!username) { showErr('usernameErr', true); valid = false; }
+      else showErr('usernameErr', false);
+
+      if (password.length < 6) { showErr('passwordErr', true); valid = false; }
+      else showErr('passwordErr', false);
+
+      if (!valid) e.preventDefault();
+    });
+  </script>
+</body>
+</html>

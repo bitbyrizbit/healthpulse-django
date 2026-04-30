@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Register — HealthPulse</title>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=Fraunces:ital,wght@0,600;1,300&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg: #f5f2ee; --card: #fff; --text: #1a1a1a; --muted: #6b7280;
+      --accent: #1d6b4a; --danger: #dc2626; --border: #e5e0d8; --radius: 14px;
+    }
+    body { font-family: 'DM Sans', sans-serif; background: var(--bg); min-height: 100vh; display: flex; align-items: center; justify-content: center; }
+    .card { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); padding: 3rem 2.5rem; width: 100%; max-width: 460px; }
+    .logo { font-family: 'Fraunces', serif; font-size: 1.6rem; font-weight: 600; color: var(--accent); margin-bottom: .25rem; }
+    .subtitle { color: var(--muted); font-size: .9rem; margin-bottom: 2rem; }
+    label { display: block; font-size: .85rem; font-weight: 500; margin-bottom: 6px; color: var(--text); }
+    input { width: 100%; padding: .7rem 1rem; border: 1.5px solid var(--border); border-radius: 8px; font-family: inherit; font-size: .95rem; background: var(--bg); transition: border-color .2s; margin-bottom: .5rem; outline: none; }
+    input:focus { border-color: var(--accent); background: #fff; }
+    .err { color: var(--danger); font-size: .8rem; margin-bottom: .8rem; display: none; }
+    .err.show { display: block; }
+    .row { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+    .btn { width: 100%; padding: .85rem; background: var(--accent); color: #fff; border: none; border-radius: 8px; font-size: 1rem; font-family: inherit; font-weight: 500; cursor: pointer; transition: opacity .2s; margin-top: .5rem; }
+    .btn:hover { opacity: .88; }
+    .link { text-align: center; margin-top: 1.2rem; color: var(--muted); font-size: .88rem; }
+    .link a { color: var(--accent); text-decoration: none; font-weight: 500; }
+    .django-msg { background: #fef2f2; color: var(--danger); border: 1px solid #fca5a5; border-radius: 8px; padding: .6rem 1rem; margin-bottom: 1rem; font-size: .85rem; }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <div class="logo">HealthPulse</div>
+    <p class="subtitle">Create your account</p>
+
+    {% if messages %}
+      {% for msg in messages %}<div class="django-msg">{{ msg }}</div>{% endfor %}
+    {% endif %}
+
+    <form id="regForm" method="POST" action="/accounts/register/" novalidate>
+      {% csrf_token %}
+      <label>Username</label>
+      <input type="text" name="username" id="reg_username" placeholder="john_doe">
+      <div class="err" id="err_username">Username must be 3+ characters.</div>
+
+      <label>Email</label>
+      <input type="email" name="email" id="reg_email" placeholder="john@example.com">
+      <div class="err" id="err_email">Enter a valid email address.</div>
+
+      <label>Mobile Number</label>
+      <input type="tel" name="phone" id="reg_phone" placeholder="9876543210">
+      <div class="err" id="err_phone">Enter a valid 10-digit mobile number.</div>
+
+      <label>Password</label>
+      <input type="password" name="password" id="reg_pass" placeholder="Min 8 characters">
+      <div class="err" id="err_pass">Password must be at least 8 characters.</div>
+
+      <label>Confirm Password</label>
+      <input type="password" id="reg_pass2" placeholder="Repeat password">
+      <div class="err" id="err_pass2">Passwords do not match.</div>
+
+      <button type="submit" class="btn">Create Account</button>
+    </form>
+    <div class="link">Already have an account? <a href="/accounts/login/">Login</a></div>
+  </div>
+
+  <script>
+    // Exp 3: JS validation — email, mobile, password
+    document.getElementById('regForm').addEventListener('submit', function(e) {
+      let valid = true;
+      const show = (id, v) => document.getElementById(id).classList.toggle('show', v);
+
+      const username = document.getElementById('reg_username').value.trim();
+      const email = document.getElementById('reg_email').value.trim();
+      const phone = document.getElementById('reg_phone').value.trim();
+      const pass = document.getElementById('reg_pass').value;
+      const pass2 = document.getElementById('reg_pass2').value;
+
+      const emailRx = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      const phoneRx = /^[6-9]\d{9}$/;
+
+      if (username.length < 3) { show('err_username', true); valid = false; } else show('err_username', false);
+      if (!emailRx.test(email)) { show('err_email', true); valid = false; } else show('err_email', false);
+      if (!phoneRx.test(phone)) { show('err_phone', true); valid = false; } else show('err_phone', false);
+      if (pass.length < 8) { show('err_pass', true); valid = false; } else show('err_pass', false);
+      if (pass !== pass2) { show('err_pass2', true); valid = false; } else show('err_pass2', false);
+
+      if (!valid) e.preventDefault();
+    });
+  </script>
+</body>
+</html>
