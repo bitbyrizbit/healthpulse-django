@@ -1,0 +1,13 @@
+venv/
+__pycache__/
+*.pyc
+*.pyo
+.env
+*.sqlite3
+db.sqlite3
+*.pkl
+migrations/
+*.egg-info/
+dist/
+.DS_Store
+Thumbs.db
