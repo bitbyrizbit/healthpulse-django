@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Your Results — HealthPulse</title>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=Fraunces:ital,wght@0,600;1,300&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root { --bg: #f5f2ee; --card: #fff; --text: #1a1a1a; --muted: #6b7280; --accent: #1d6b4a; --border: #e5e0d8; --radius: 14px; }
+    body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--text); }
+    nav { background: #fff; border-bottom: 1px solid var(--border); padding: .9rem 2rem; display: flex; align-items: center; justify-content: space-between; }
+    .nav-logo { font-family: 'Fraunces', serif; font-size: 1.3rem; color: var(--accent); font-weight: 600; }
+    .nav-links a { text-decoration: none; color: var(--muted); font-size: .9rem; margin-left: 1.5rem; }
+    main { max-width: 760px; margin: 2.5rem auto; padding: 0 1.5rem; }
+    h1 { font-family: 'Fraunces', serif; font-size: 1.6rem; margin-bottom: 1.5rem; }
+    .risk-card {
+      border-radius: var(--radius); padding: 2rem;
+      margin-bottom: 1.5rem; border: 2px solid;
+      display: flex; align-items: center; gap: 1.5rem;
+    }
+    .risk-Low { background: #f0fdf4; border-color: #86efac; }
+    .risk-Moderate { background: #fffbeb; border-color: #fcd34d; }
+    .risk-High { background: #fef2f2; border-color: #fca5a5; }
+    .risk-Unavailable { background: #f3f4f6; border-color: #d1d5db; }
+    .risk-icon { font-size: 3rem; }
+    .risk-label { font-family: 'Fraunces', serif; font-size: 1.4rem; font-weight: 600; }
+    .risk-score { font-size: .9rem; color: var(--muted); margin-top: .3rem; }
+    .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1.5rem; }
+    .metric { background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 1rem 1.2rem; }
+    .metric .name { font-size: .78rem; text-transform: uppercase; letter-spacing: .05em; color: var(--muted); margin-bottom: .3rem; }
+    .metric .val { font-size: 1.2rem; font-weight: 600; color: var(--accent); }
+    .recs { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); padding: 1.5rem; margin-bottom: 1.5rem; }
+    .recs h2 { font-size: 1rem; font-weight: 600; margin-bottom: 1rem; }
+    .rec-item { display: flex; gap: .75rem; align-items: flex-start; margin-bottom: .75rem; font-size: .9rem; line-height: 1.5; }
+    .rec-dot { width: 7px; height: 7px; background: var(--accent); border-radius: 50%; margin-top: 7px; flex-shrink: 0; }
+    .btn-row { display: flex; gap: 1rem; }
+    .btn { padding: .8rem 1.5rem; border-radius: 8px; font-family: inherit; font-size: .9rem; font-weight: 500; cursor: pointer; text-decoration: none; display: inline-block; transition: opacity .2s; }
+    .btn-primary { background: var(--accent); color: #fff; border: none; }
+    .btn-outline { background: transparent; border: 1.5px solid var(--accent); color: var(--accent); }
+    .btn:hover { opacity: .85; }
+  </style>
+</head>
+<body>
+  <nav>
+    <div class="nav-logo">HealthPulse</div>
+    <div class="nav-links">
+      <a href="/dashboard/">Dashboard</a>
+      <a href="/accounts/logout/">Logout</a>
+    </div>
+  </nav>
+  <main>
+    <h1>Your Health Report</h1>
+
+    {% with label=record.risk_label|default:"Unavailable" %}
+    <div class="risk-card risk-{{ label }}">
+      <div class="risk-icon">
+        {% if label == "Low" %}✅{% elif label == "High" %}⚠️{% else %}🔶{% endif %}
+      </div>
+      <div>
+        <div class="risk-label">{{ label }} Risk</div>
+        <div class="risk-score">
+          {% if record.risk_score %}Confidence: {{ record.risk_score|floatformat:0 }}%{% else %}ML service unavailable{% endif %}
+        </div>
+      </div>
+    </div>
+    {% endwith %}
+
+    <div class="grid">
+      <div class="metric"><div class="name">Age</div><div class="val">{{ record.age }} yrs</div></div>
+      <div class="metric"><div class="name">BMI</div><div class="val">{{ record.bmi }}</div></div>
+      <div class="metric"><div class="name">Blood Pressure</div><div class="val">{{ record.systolic_bp }}/{{ record.diastolic_bp }} mmHg</div></div>
+      <div class="metric"><div class="name">Blood Sugar</div><div class="val">{{ record.blood_sugar }} mg/dL</div></div>
+      <div class="metric"><div class="name">Cholesterol</div><div class="val">{{ record.cholesterol }} mg/dL</div></div>
+      <div class="metric"><div class="name">Smoker / Diabetic</div><div class="val">{{ record.smoker|yesno:"Yes,No" }} / {{ record.diabetic|yesno:"Yes,No" }}</div></div>
+    </div>
+
+    <div class="btn-row">
+      <a href="/book/" class="btn btn-primary">Book a Doctor</a>
+      <a href="/health/checker/" class="btn btn-outline">Check Again</a>
+      <a href="/dashboard/" class="btn btn-outline">Dashboard</a>
+    </div>
+  </main>
+</body>
+</html>

@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Health Check — HealthPulse</title>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=Fraunces:ital,wght@0,600&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root { --bg: #f5f2ee; --card: #fff; --text: #1a1a1a; --muted: #6b7280; --accent: #1d6b4a; --accent-light: #e8f5ee; --border: #e5e0d8; --radius: 14px; --danger: #dc2626; }
+    body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--text); }
+    nav { background: #fff; border-bottom: 1px solid var(--border); padding: .9rem 2rem; display: flex; align-items: center; justify-content: space-between; }
+    .nav-logo { font-family: 'Fraunces', serif; font-size: 1.3rem; color: var(--accent); font-weight: 600; }
+    .nav-links a { text-decoration: none; color: var(--muted); font-size: .9rem; margin-left: 1.5rem; }
+    .nav-links a:hover { color: var(--accent); }
+    main { max-width: 740px; margin: 2.5rem auto; padding: 0 1.5rem; }
+    .card { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); padding: 2.5rem; }
+    h1 { font-family: 'Fraunces', serif; font-size: 1.6rem; margin-bottom: .3rem; }
+    .sub { color: var(--muted); font-size: .9rem; margin-bottom: 2rem; }
+    .section-title { font-size: .75rem; text-transform: uppercase; letter-spacing: .07em; color: var(--accent); font-weight: 600; margin: 1.5rem 0 .8rem; border-top: 1px solid var(--border); padding-top: 1.2rem; }
+    .section-title:first-of-type { margin-top: 0; border-top: none; padding-top: 0; }
+    label { display: block; font-size: .85rem; font-weight: 500; margin-bottom: 5px; }
+    input[type="number"], input[type="text"] {
+      width: 100%; padding: .7rem 1rem; border: 1.5px solid var(--border);
+      border-radius: 8px; font-family: inherit; font-size: .95rem;
+      background: var(--bg); margin-bottom: .5rem; outline: none; transition: border-color .2s;
+    }
+    input:focus { border-color: var(--accent); background: #fff; }
+    .row { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+    .row3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1rem; }
+    .err { color: var(--danger); font-size: .78rem; margin-top: -0.3rem; margin-bottom: .6rem; display: none; }
+    .err.show { display: block; }
+    .checkbox-row { display: flex; gap: 2rem; margin-bottom: 1rem; }
+    .checkbox-item { display: flex; align-items: center; gap: .5rem; cursor: pointer; font-size: .9rem; }
+    .checkbox-item input { width: auto; margin-bottom: 0; }
+    .btn { width: 100%; padding: .85rem; background: var(--accent); color: #fff; border: none; border-radius: 8px; font-size: 1rem; font-family: inherit; font-weight: 500; cursor: pointer; transition: opacity .2s; margin-top: 1rem; }
+    .btn:hover { opacity: .88; }
+    .loading { display: none; text-align: center; padding: 1rem; color: var(--muted); font-size: .9rem; }
+    .bmi-preview { background: var(--accent-light); border-radius: 8px; padding: .6rem 1rem; font-size: .85rem; color: var(--accent); margin-bottom: .5rem; display: none; }
+    .back { display: inline-block; margin-bottom: 1.5rem; color: var(--muted); text-decoration: none; font-size: .9rem; }
+  </style>
+</head>
+<body>
+  <nav>
+    <div class="nav-logo">HealthPulse</div>
+    <div class="nav-links">
+      <a href="/dashboard/">Dashboard</a>
+      <a href="/accounts/logout/">Logout</a>
+    </div>
+  </nav>
+  <main>
+    <a href="/dashboard/" class="back">← Back</a>
+    <div class="card">
+      <h1>Health Risk Checker</h1>
+      <p class="sub">Enter your vitals and our ML model will assess your cardiovascular risk.</p>
+
+      <form id="healthForm" method="POST" action="/health/checker/" novalidate>
+        {% csrf_token %}
+
+        <div class="section-title">Personal Info</div>
+        <div class="row">
+          <div>
+            <label>Age (years)</label>
+            <input type="number" name="age" id="age" placeholder="e.g. 35" min="1" max="120">
+            <div class="err" id="err_age">Enter a valid age (1–120).</div>
+          </div>
+          <div>
+            <label>Weight (kg)</label>
+            <input type="number" name="weight_kg" id="weight" placeholder="e.g. 70" step="0.1">
+            <div class="err" id="err_weight">Enter weight in kg.</div>
+          </div>
+        </div>
+        <div>
+          <label>Height (cm)</label>
+          <input type="number" name="height_cm" id="height" placeholder="e.g. 170" step="0.1">
+          <div class="err" id="err_height">Enter height in cm.</div>
+        </div>
+        <div class="bmi-preview" id="bmiPreview">BMI: —</div>
+
+        <div class="section-title">Blood Pressure</div>
+        <div class="row">
+          <div>
+            <label>Systolic BP (mmHg)</label>
+            <input type="number" name="systolic_bp" id="sys_bp" placeholder="e.g. 120" min="60" max="250">
+            <div class="err" id="err_sys">Enter systolic BP (60–250).</div>
+          </div>
+          <div>
+            <label>Diastolic BP (mmHg)</label>
+            <input type="number" name="diastolic_bp" id="dia_bp" placeholder="e.g. 80" min="40" max="150">
+            <div class="err" id="err_dia">Enter diastolic BP (40–150).</div>
+          </div>
+        </div>
+
+        <div class="section-title">Lab Values</div>
+        <div class="row">
+          <div>
+            <label>Fasting Blood Sugar (mg/dL)</label>
+            <input type="number" name="blood_sugar" id="sugar" placeholder="e.g. 95" step="0.1">
+            <div class="err" id="err_sugar">Enter fasting blood sugar.</div>
+          </div>
+          <div>
+            <label>Total Cholesterol (mg/dL)</label>
+            <input type="number" name="cholesterol" id="chol" placeholder="e.g. 190" step="0.1">
+            <div class="err" id="err_chol">Enter total cholesterol.</div>
+          </div>
+        </div>
+
+        <div class="section-title">Risk Factors</div>
+        <div class="checkbox-row">
+          <label class="checkbox-item">
+            <input type="checkbox" name="smoker" id="smoker">
+            <span>Current Smoker</span>
+          </label>
+          <label class="checkbox-item">
+            <input type="checkbox" name="diabetic" id="diabetic">
+            <span>Diabetic</span>
+          </label>
+        </div>
+
+        <button type="submit" class="btn" id="submitBtn">Analyse My Health</button>
+        <div class="loading" id="loadingMsg">
+          Contacting ML service... please wait ⏳
+        </div>
+      </form>
+    </div>
+  </main>
+
+  <script>
+    // Live BMI preview
+    function updateBMI() {
+      const w = parseFloat(document.getElementById('weight').value);
+      const h = parseFloat(document.getElementById('height').value) / 100;
+      const preview = document.getElementById('bmiPreview');
+      if (w > 0 && h > 0) {
+        const bmi = (w / (h * h)).toFixed(1);
+        let cat = bmi < 18.5 ? 'Underweight' : bmi < 25 ? 'Normal' : bmi < 30 ? 'Overweight' : 'Obese';
+        preview.textContent = `BMI: ${bmi} (${cat})`;
+        preview.style.display = 'block';
+      } else {
+        preview.style.display = 'none';
+      }
+    }
+    document.getElementById('weight').addEventListener('input', updateBMI);
+    document.getElementById('height').addEventListener('input', updateBMI);
+
+    // Exp 3: Full form validation
+    document.getElementById('healthForm').addEventListener('submit', function(e) {
+      let valid = true;
+      const show = (id, v) => document.getElementById(id).classList.toggle('show', v);
+      const val = id => parseFloat(document.getElementById(id).value);
+
+      const age = val('age');
+      const weight = val('weight');
+      const height = val('height');
+      const sys = val('sys_bp');
+      const dia = val('dia_bp');
+      const sugar = val('sugar');
+      const chol = val('chol');
+
+      if (isNaN(age) || age < 1 || age > 120) { show('err_age', true); valid = false; } else show('err_age', false);
+      if (isNaN(weight) || weight < 20) { show('err_weight', true); valid = false; } else show('err_weight', false);
+      if (isNaN(height) || height < 50) { show('err_height', true); valid = false; } else show('err_height', false);
+      if (isNaN(sys) || sys < 60 || sys > 250) { show('err_sys', true); valid = false; } else show('err_sys', false);
+      if (isNaN(dia) || dia < 40 || dia > 150) { show('err_dia', true); valid = false; } else show('err_dia', false);
+      if (isNaN(sugar) || sugar < 50) { show('err_sugar', true); valid = false; } else show('err_sugar', false);
+      if (isNaN(chol) || chol < 100) { show('err_chol', true); valid = false; } else show('err_chol', false);
+
+      if (!valid) {
+        e.preventDefault();
+      } else {
+        document.getElementById('submitBtn').disabled = true;
+        document.getElementById('loadingMsg').style.display = 'block';
+      }
+    });
+  </script>
+</body>
+</html>
