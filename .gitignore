@@ -6,7 +6,6 @@ __pycache__/
 *.sqlite3
 db.sqlite3
 *.pkl
-migrations/
 *.egg-info/
 dist/
 .DS_Store
