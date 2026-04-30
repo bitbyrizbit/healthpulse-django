@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Dashboard — HealthPulse</title>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=Fraunces:ital,wght@0,600&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg: #f5f2ee; --card: #fff; --text: #1a1a1a; --muted: #6b7280;
+      --accent: #1d6b4a; --accent-light: #e8f5ee;
+      --border: #e5e0d8; --radius: 14px;
+      --danger: #dc2626; --warn: #d97706; --ok: #16a34a;
+    }
+    body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--text); }
+    nav {
+      background: #fff; border-bottom: 1px solid var(--border);
+      padding: .9rem 2rem; display: flex; align-items: center; justify-content: space-between;
+      position: sticky; top: 0; z-index: 10;
+    }
+    .nav-logo { font-family: 'Fraunces', serif; font-size: 1.3rem; color: var(--accent); font-weight: 600; }
+    .nav-links { display: flex; gap: 1.5rem; align-items: center; }
+    .nav-links a { text-decoration: none; color: var(--muted); font-size: .9rem; transition: color .2s; }
+    .nav-links a:hover { color: var(--accent); }
+    .nav-links a.active { color: var(--accent); font-weight: 500; }
+    .nav-user { font-size: .85rem; color: var(--muted); }
+    main { max-width: 1100px; margin: 0 auto; padding: 2rem 1.5rem; }
+    h1 { font-family: 'Fraunces', serif; font-size: 1.9rem; font-weight: 600; margin-bottom: .3rem; }
+    .greeting { color: var(--muted); margin-bottom: 2rem; }
+    .cards-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-bottom: 2rem; }
+    .stat-card { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); padding: 1.3rem 1.5rem; }
+    .stat-card .label { font-size: .8rem; color: var(--muted); text-transform: uppercase; letter-spacing: .05em; margin-bottom: .4rem; }
+    .stat-card .value { font-size: 1.8rem; font-weight: 600; color: var(--accent); }
+    .section-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1rem; }
+    .section-head h2 { font-size: 1.1rem; font-weight: 600; }
+    .btn-sm { padding: .5rem 1.1rem; background: var(--accent); color: #fff; border: none; border-radius: 7px; font-size: .85rem; font-family: inherit; cursor: pointer; text-decoration: none; display: inline-block; transition: opacity .2s; }
+    .btn-sm:hover { opacity: .85; }
+    .btn-outline { background: transparent; border: 1.5px solid var(--accent); color: var(--accent); }
+    table { width: 100%; border-collapse: collapse; background: var(--card); border-radius: var(--radius); overflow: hidden; border: 1px solid var(--border); }
+    thead { background: var(--accent-light); }
+    th { text-align: left; padding: .75rem 1rem; font-size: .82rem; text-transform: uppercase; letter-spacing: .05em; color: var(--accent); font-weight: 600; }
+    td { padding: .75rem 1rem; border-top: 1px solid var(--border); font-size: .9rem; }
+    .badge { display: inline-block; padding: .2rem .6rem; border-radius: 99px; font-size: .75rem; font-weight: 500; }
+    .badge.pending { background: #fef9c3; color: #a16207; }
+    .badge.confirmed { background: #dcfce7; color: #15803d; }
+    .badge.cancelled { background: #fee2e2; color: var(--danger); }
+    .badge.completed { background: #e0e7ff; color: #4338ca; }
+    .cancel-btn { color: var(--danger); background: none; border: none; font-size: .8rem; cursor: pointer; text-decoration: underline; font-family: inherit; }
+    .empty { text-align: center; padding: 3rem; color: var(--muted); }
+    .msgs { margin-bottom: 1rem; }
+    .msg-success { background: #f0fdf4; border: 1px solid #86efac; color: #15803d; padding: .6rem 1rem; border-radius: 8px; font-size: .85rem; }
+  </style>
+</head>
+<body>
+  <nav>
+    <div class="nav-logo">HealthPulse</div>
+    <div class="nav-links">
+      <a href="/dashboard/" class="active">Dashboard</a>
+      <a href="/book/">Book Appointment</a>
+      <a href="/health/checker/">Health Check</a>
+      <a href="/accounts/profile/">Profile</a>
+      <a href="/accounts/logout/">Logout</a>
+    </div>
+    <div class="nav-user">{{ user.username }}</div>
+  </nav>
+
+  <main>
+    {% if messages %}
+      <div class="msgs">
+        {% for msg in messages %}<div class="msg-success">{{ msg }}</div>{% endfor %}
+      </div>
+    {% endif %}
+
+    <h1>Good day, {{ user.first_name|default:user.username }} 👋</h1>
+    <p class="greeting">Here's a summary of your health activity.</p>
+
+    <div class="cards-row">
+      <div class="stat-card">
+        <div class="label">Total Appointments</div>
+        <div class="value">{{ appointments.count }}</div>
+      </div>
+      <div class="stat-card">
+        <div class="label">Upcoming</div>
+        <div class="value">{{ appointments|length }}</div>
+      </div>
+      <div class="stat-card">
+        <div class="label">Doctors Available</div>
+        <div class="value">{{ doctors.count }}</div>
+      </div>
+    </div>
+
+    <div class="section-head">
+      <h2>My Appointments</h2>
+      <a href="/book/" class="btn-sm">+ New Appointment</a>
+    </div>
+
+    {% if appointments %}
+    <table>
+      <thead>
+        <tr>
+          <th>Doctor</th>
+          <th>Specialization</th>
+          <th>Date</th>
+          <th>Time</th>
+          <th>Status</th>
+          <th>Action</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for appt in appointments %}
+        <tr>
+          <td>Dr. {{ appt.doctor.name }}</td>
+          <td>{{ appt.doctor.get_specialization_display }}</td>
+          <td>{{ appt.date }}</td>
+          <td>{{ appt.time_slot }}</td>
+          <td><span class="badge {{ appt.status }}">{{ appt.status|title }}</span></td>
+          <td>
+            {% if appt.status == 'pending' %}
+            <form method="POST" action="/cancel/{{ appt.id }}/" style="display:inline">
+              {% csrf_token %}
+              <button class="cancel-btn">Cancel</button>
+            </form>
+            {% else %}—{% endif %}
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% else %}
+      <div class="empty">No appointments yet. <a href="/book/" style="color:var(--accent)">Book one now →</a></div>
+    {% endif %}
+  </main>
+</body>
+</html>

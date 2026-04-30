@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Book Appointment — HealthPulse</title>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=Fraunces:ital,wght@0,600&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root { --bg: #f5f2ee; --card: #fff; --text: #1a1a1a; --muted: #6b7280; --accent: #1d6b4a; --border: #e5e0d8; --radius: 14px; --danger: #dc2626; }
+    body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--text); }
+    nav { background: #fff; border-bottom: 1px solid var(--border); padding: .9rem 2rem; display: flex; align-items: center; justify-content: space-between; }
+    .nav-logo { font-family: 'Fraunces', serif; font-size: 1.3rem; color: var(--accent); font-weight: 600; }
+    .nav-links a { text-decoration: none; color: var(--muted); font-size: .9rem; margin-left: 1.5rem; }
+    .nav-links a:hover { color: var(--accent); }
+    main { max-width: 700px; margin: 2.5rem auto; padding: 0 1.5rem; }
+    .card { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); padding: 2.5rem; }
+    h1 { font-family: 'Fraunces', serif; font-size: 1.6rem; margin-bottom: .3rem; }
+    .sub { color: var(--muted); font-size: .9rem; margin-bottom: 2rem; }
+    label { display: block; font-size: .85rem; font-weight: 500; margin-bottom: 5px; }
+    select, input, textarea {
+      width: 100%; padding: .7rem 1rem; border: 1.5px solid var(--border);
+      border-radius: 8px; font-family: inherit; font-size: .95rem;
+      background: var(--bg); margin-bottom: .5rem; outline: none; transition: border-color .2s;
+    }
+    select:focus, input:focus, textarea:focus { border-color: var(--accent); background: #fff; }
+    textarea { resize: vertical; min-height: 90px; }
+    .err { color: var(--danger); font-size: .8rem; margin-bottom: .8rem; display: none; }
+    .err.show { display: block; }
+    .row { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+    .btn { width: 100%; padding: .85rem; background: var(--accent); color: #fff; border: none; border-radius: 8px; font-size: 1rem; font-family: inherit; font-weight: 500; cursor: pointer; transition: opacity .2s; margin-top: .5rem; }
+    .btn:hover { opacity: .88; }
+    .back { display: inline-block; margin-bottom: 1.5rem; color: var(--muted); text-decoration: none; font-size: .9rem; }
+    .back:hover { color: var(--accent); }
+  </style>
+</head>
+<body>
+  <nav>
+    <div class="nav-logo">HealthPulse</div>
+    <div class="nav-links">
+      <a href="/dashboard/">Dashboard</a>
+      <a href="/accounts/logout/">Logout</a>
+    </div>
+  </nav>
+  <main>
+    <a href="/dashboard/" class="back">← Back to Dashboard</a>
+    <div class="card">
+      <h1>Book an Appointment</h1>
+      <p class="sub">Fill in the details to schedule your visit.</p>
+
+      <form id="bookForm" method="POST" action="/book/" novalidate>
+        {% csrf_token %}
+
+        <label>Select Doctor</label>
+        <select name="doctor" id="doctor">
+          <option value="">— Choose a doctor —</option>
+          {% for doc in doctors %}
+          <option value="{{ doc.id }}">Dr. {{ doc.name }} — {{ doc.get_specialization_display }} (₹{{ doc.fee }})</option>
+          {% endfor %}
+        </select>
+        <div class="err" id="err_doc">Please select a doctor.</div>
+
+        <div class="row">
+          <div>
+            <label>Appointment Date</label>
+            <input type="date" name="date" id="appt_date">
+            <div class="err" id="err_date">Please select a future date.</div>
+          </div>
+          <div>
+            <label>Time Slot</label>
+            <select name="time_slot" id="time_slot">
+              <option value="">— Select time —</option>
+              <option value="09:00">09:00 AM</option>
+              <option value="10:00">10:00 AM</option>
+              <option value="11:00">11:00 AM</option>
+              <option value="14:00">02:00 PM</option>
+              <option value="15:00">03:00 PM</option>
+              <option value="16:00">04:00 PM</option>
+            </select>
+            <div class="err" id="err_time">Please select a time slot.</div>
+          </div>
+        </div>
+
+        <label>Reason for Visit</label>
+        <textarea name="reason" id="reason" placeholder="Briefly describe your symptoms or reason..."></textarea>
+
+        <button type="submit" class="btn">Confirm Booking</button>
+      </form>
+    </div>
+  </main>
+
+  <script>
+    // Exp 3: JS validation
+    const today = new Date().toISOString().split('T')[0];
+    document.getElementById('appt_date').setAttribute('min', today);
+
+    document.getElementById('bookForm').addEventListener('submit', function(e) {
+      let valid = true;
+      const show = (id, v) => document.getElementById(id).classList.toggle('show', v);
+
+      const doctor = document.getElementById('doctor').value;
+      const date = document.getElementById('appt_date').value;
+      const time = document.getElementById('time_slot').value;
+
+      if (!doctor) { show('err_doc', true); valid = false; } else show('err_doc', false);
+      if (!date || date < today) { show('err_date', true); valid = false; } else show('err_date', false);
+      if (!time) { show('err_time', true); valid = false; } else show('err_time', false);
+
+      if (!valid) e.preventDefault();
+    });
+  </script>
+</body>
+</html>
